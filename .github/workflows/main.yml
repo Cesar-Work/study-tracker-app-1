@@ -1,16 +1,14 @@
-# 1) Make sure you’re on the correct branch
-git checkout main
-
-# 2) Create/overwrite the workflow with a modern config
-mkdir -p .github/workflows
-cat > .github/workflows/android_build.yml <<'YAML'
 name: Android CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches:
+      - master
+      - main
   pull_request:
-    branches: [ master, main ]
+    branches:
+      - master
+      - main
 
 jobs:
   build:
@@ -27,32 +25,23 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # Provide a Gradle executable even if wrapper isn't committed yet
-      - name: Set up Gradle (no wrapper yet)
+      # Provide a Gradle binary even if wrapper isn't committed
+      - name: Set up Gradle
         uses: gradle/gradle-build-action@v3
         with:
           gradle-version: 8.7
 
-      # Generate and commit the Gradle wrapper into the workspace for subsequent steps
       - name: Generate Gradle wrapper
         run: |
           gradle wrapper --gradle-version 8.7
           chmod +x gradlew
 
-      # Build Debug APK using the wrapper
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      # Upload APK artifact (use v4!)
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-YAML
-
-# 3) Commit & push the workflow
-git add .github/workflows/android_build.yml
-git commit -m "CI: fix artifact action (v4), ensure Gradle 8.7, auto-generate wrapper, build APK"
-git push origin master
