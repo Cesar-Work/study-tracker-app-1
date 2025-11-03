@@ -1,0 +1,16 @@
+// Top-level build file where you can add configuration options common to all sub‑projects/modules.
+plugins {
+    // The Android Gradle plugin provides tasks for building Android apps.
+    id("com.android.application") version "8.1.0" apply false
+    // Kotlin plugin for Android support.
+    id("org.jetbrains.kotlin.android") version "1.9.0" apply false
+    // KAPT plugin for annotation processing (used by Room).
+    id("org.jetbrains.kotlin.kapt") version "1.9.0" apply false
+}
+
+subprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}

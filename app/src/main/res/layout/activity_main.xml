@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Étapes quotidiennes"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Sleep tracking -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Heures de sommeil" />
+        <EditText
+            android:id="@+id/input_sleep_hours"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:hint="ex: 8" />
+        <CheckBox
+            android:id="@+id/checkbox_sleep"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sommeil suffisant" />
+
+        <!-- Nutrition tracking -->
+        <CheckBox
+            android:id="@+id/checkbox_nutrition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Repas équilibrés" />
+
+        <!-- Hydration tracking -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hydratation (L)" />
+        <EditText
+            android:id="@+id/input_hydration_liters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:hint="ex: 2" />
+        <CheckBox
+            android:id="@+id/checkbox_hydration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hydratation suffisante" />
+
+        <!-- Exercise tracking -->
+        <CheckBox
+            android:id="@+id/checkbox_exercise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Exercice" />
+
+        <!-- Mindfulness tracking -->
+        <CheckBox
+            android:id="@+id/checkbox_mindfulness"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pleine conscience" />
+
+        <!-- Journaling tracking -->
+        <CheckBox
+            android:id="@+id/checkbox_journaling"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Journal" />
+
+        <!-- Save button -->
+        <Button
+            android:id="@+id/button_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enregistrer" />
+
+    </LinearLayout>
+
+</ScrollView>

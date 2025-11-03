@@ -1,0 +1,3 @@
+rootProject.name = "study_tracker_app"
+// Include the Android application module
+include(":app")
