@@ -1,52 +1,58 @@
+# 1) Make sure you’re on the correct branch
+git checkout master
+
+# 2) Create/overwrite the workflow with a modern config
+mkdir -p .github/workflows
+cat > .github/workflows/android_build.yml <<'YAML'
 name: Android CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ main ]
+    branches: [ master, main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
+          cache: gradle
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v3
+      # Provide a Gradle executable even if wrapper isn't committed yet
+      - name: Set up Gradle (no wrapper yet)
+        uses: gradle/gradle-build-action@v3
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          gradle-version: 8.7
 
-      # Prepare a Gradle environment. The gradle-build-action downloads the specified Gradle
-      # version and provides a gradle executable for subsequent tasks. We specify a recent
-      # version compatible with the Android Gradle Plugin used in this project.
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 8.1
+      # Generate and commit the Gradle wrapper into the workspace for subsequent steps
+      - name: Generate Gradle wrapper
+        run: |
+          gradle wrapper --gradle-version 8.7
+          chmod +x gradlew
 
-      # Generate the Gradle wrapper inside the repository. This makes `./gradlew` available
-      # for later steps in this workflow without needing to commit it to the repository.
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version=8.1 --distribution-type=all
-
-      # Build the debug APK using the freshly generated wrapper. The assembleDebug
-      # task compiles the application in debug mode.
+      # Build Debug APK using the wrapper
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v3
+      # Upload APK artifact (use v4!)
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+YAML
+
+# 3) Commit & push the workflow
+git add .github/workflows/android_build.yml
+git commit -m "CI: fix artifact action (v4), ensure Gradle 8.7, auto-generate wrapper, build APK"
+git push origin master
