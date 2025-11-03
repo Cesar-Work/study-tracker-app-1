@@ -1,14 +1,12 @@
+mkdir -p .github/workflows
+cat > .github/workflows/main.yml <<'YAML'
 name: Android CI
 
 on:
   push:
-    branches:
-      - master
-      - main
+    branches: [ master, main ]
   pull_request:
-    branches:
-      - master
-      - main
+    branches: [ master, main ]
 
 jobs:
   build:
@@ -25,19 +23,19 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # Provide a Gradle binary even if wrapper isn't committed
-      - name: Set up Gradle
+      # Temporary Gradle provision to generate wrapper (ok to keep despite deprecation warning)
+      - name: Provision Gradle to generate wrapper
         uses: gradle/gradle-build-action@v3
         with:
-          gradle-version: 8.7
+          gradle-version: 8.2.1
 
-      - name: Generate Gradle wrapper
+      - name: Generate Gradle wrapper (8.2.1)
         run: |
-          gradle wrapper --gradle-version 8.7
+          gradle wrapper --gradle-version 8.2.1
           chmod +x gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -45,3 +43,8 @@ jobs:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+YAML
+
+git add settings.gradle .github/workflows/main.yml
+git commit -m "CI: fix plugin repositories, add wrapper generation, use upload-artifact@v4"
+git push origin HEAD
