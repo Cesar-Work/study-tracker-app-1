@@ -1,5 +1,5 @@
 # 1) Make sure you’re on the correct branch
-git checkout master
+git checkout main
 
 # 2) Create/overwrite the workflow with a modern config
 mkdir -p .github/workflows
