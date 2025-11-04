@@ -5,9 +5,4 @@ plugins {
   id("org.jetbrains.kotlin.kapt") version "1.9.0" apply false
 }
 
-subprojects {
-  repositories {
-    google()
-    mavenCentral()
-  }
-}
+// Pas de repositories ici : ils sont définis dans settings.gradle
