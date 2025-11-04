@@ -21,51 +21,32 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # Installe/actualise le SDK Android et accepte les licences
       - name: Install Android SDK packages
         shell: bash
         run: |
           set -euo pipefail
           export ANDROID_SDK_ROOT="/usr/local/lib/android/sdk"
-
-          # Trouver sdkmanager
           if [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
             SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           else
             SDKMANAGER="$(ls -d "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin 2>/dev/null | head -n1)/sdkmanager"
           fi
-
-          # Si pas trouvé, installer les cmdline-tools "latest"
-          if [ ! -x "${SDKMANAGER:-}" ]; then
-            mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-            curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip
-            unzip -q /tmp/cmdline-tools.zip -d /tmp/cli
-            mv /tmp/cli/cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          fi
-
-          # Accepter les licences (éviter l'échec "Broken pipe")
           set +o pipefail
           yes | "$SDKMANAGER" --licenses || true
           set -o pipefail
+          "$SDKMANAGER" "platform-tools" "build-tools;34.0.0" "platforms;android-34"
 
-          # Installer les plateformes/outils nécessaires
-          "$SDKMANAGER" "platform-tools" \
-                        "build-tools;34.0.0" \
-                        "platforms;android-34"
-
-      # Cache/config Gradle (action moderne)
-      - name: Setup Gradle
+      - name: Setup Gradle (cache/config)
         uses: gradle/actions/setup-gradle@v3
 
-      # Génère/normalise le wrapper Gradle (8.2.1) si nécessaire
       - name: Ensure Gradle wrapper (8.2.1)
         shell: bash
         run: |
           if [ -x ./gradlew ]; then
             ./gradlew wrapper --gradle-version 8.2.1
           else
-            gradle wrapper --gradle-version 8.2.1
+            echo "Missing gradle wrapper in repo (gradlew, gradle/wrapper/*). Commit them first."
+            exit 1
           fi
           chmod +x gradlew
 
