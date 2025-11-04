@@ -36,18 +36,14 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" "platform-tools" "build-tools;34.0.0" "platforms;android-34"
 
-      - name: Setup Gradle (cache/config)
+      - name: Setup Gradle (modern)
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Ensure Gradle wrapper (8.2.1)
-        shell: bash
+      # Génère le wrapper avec le binaire gradle (puis on utilise ./gradlew)
+      - name: Generate Gradle wrapper (8.2.1)
         run: |
-          if [ -x ./gradlew ]; then
-            ./gradlew wrapper --gradle-version 8.2.1
-          else
-            echo "Missing gradle wrapper in repo (gradlew, gradle/wrapper/*). Commit them first."
-            exit 1
-          fi
+          gradle --version
+          gradle wrapper --gradle-version 8.2.1
           chmod +x gradlew
 
       - name: Build Debug APK
