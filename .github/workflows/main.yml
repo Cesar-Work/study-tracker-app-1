@@ -21,16 +21,30 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # Provisionne Gradle 8.2.1 pour générer le wrapper si absent (avertissement OK)
-      - name: Provision Gradle 8.2.1
-        uses: gradle/gradle-build-action@v3
+      # Installe le SDK Android et accepte les licences
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
         with:
-          gradle-version: 8.2.1
+          packages: |
+            platforms;android-34
+            build-tools;34.0.0
+            platform-tools
 
-      - name: Generate Gradle wrapper (8.2.1)
+      # Configure le cache Gradle (action officielle moderne)
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # S'il y a déjà un wrapper, on le remet à niveau; sinon cette commande échouera.
+      # Si elle échoue faute de wrapper, ajoutez les fichiers wrapper au repo.
+      - name: Ensure Gradle wrapper (8.2.1)
         run: |
-          gradle wrapper --gradle-version 8.2.1
-          chmod +x gradlew
+          if [ -x ./gradlew ]; then
+            ./gradlew wrapper --gradle-version 8.2.1
+            chmod +x gradlew
+          else
+            echo "Gradle wrapper missing. Commit gradlew + gradle/wrapper/* to repo."
+            exit 1
+          fi
 
       - name: Build Debug APK
         run: ./gradlew --no-daemon --stacktrace assembleDebug
