@@ -21,29 +21,34 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # Installe le SDK Android et accepte les licences
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platforms;android-34
-            build-tools;34.0.0
-            platform-tools
+      # Utilise le SDK Android préinstallé sur le runner et installe les paquets requis
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ANDROID_SDK_ROOT="/usr/local/lib/android/sdk"
+          # Trouve sdkmanager (latest ou premier dossier disponible)
+          if [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          else
+            SDKMANAGER="$(ls -d "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin | head -n1)/sdkmanager"
+          fi
+          yes | "$SDKMANAGER" --licenses
+          "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
-      # Configure le cache Gradle (action officielle moderne)
-      - name: Setup Gradle
+      # Configure le cache Gradle (action moderne)
+      - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      # S'il y a déjà un wrapper, on le remet à niveau; sinon cette commande échouera.
-      # Si elle échoue faute de wrapper, ajoutez les fichiers wrapper au repo.
-      - name: Ensure Gradle wrapper (8.2.1)
+      # Génère un wrapper compatible AGP 8.1.0 (si pas encore commité)
+      - name: Generate Gradle wrapper (8.2.1)
+        shell: bash
         run: |
           if [ -x ./gradlew ]; then
-            ./gradlew wrapper --gradle-version 8.2.1
-            chmod +x gradlew
+            echo "Gradle wrapper already present"
           else
-            echo "Gradle wrapper missing. Commit gradlew + gradle/wrapper/* to repo."
-            exit 1
+            gradle wrapper --gradle-version 8.2.1
+            chmod +x gradlew
           fi
 
       - name: Build Debug APK
