@@ -21,33 +21,48 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      # Installer/actualiser le SDK Android + accepter les licences
       - name: Install Android SDK packages
         shell: bash
         run: |
           set -euo pipefail
           export ANDROID_SDK_ROOT="/usr/local/lib/android/sdk"
+
+          # Trouver sdkmanager
           if [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
             SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           else
-            SDKMANAGER="$(ls -d "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin 2>/dev/null | head -n1)/sdkmanager"
+            SDKMANAGER="$(ls -d "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin 2>/dev/null | head -n1)/sdkmanager" || true
           fi
+
+          # Si absent, installer cmdline-tools latest
+          if [ ! -x "${SDKMANAGER:-}" ]; then
+            mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+            curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip
+            unzip -q /tmp/cmdline-tools.zip -d /tmp/cli
+            mv /tmp/cli/cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          fi
+
           set +o pipefail
           yes | "$SDKMANAGER" --licenses || true
           set -o pipefail
-          "$SDKMANAGER" "platform-tools" "build-tools;34.0.0" "platforms;android-34"
 
-      - name: Setup Gradle (modern)
+          "$SDKMANAGER" "platform-tools" \
+                        "build-tools;34.0.0" \
+                        "platforms;android-34"
+
+      # Action moderne Gradle qui fournit le binaire 8.2.1 et gère le cache
+      - name: Setup Gradle 8.2.1
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.2.1
 
-      # Génère le wrapper avec le binaire gradle (puis on utilise ./gradlew)
-      - name: Generate Gradle wrapper (8.2.1)
-        run: |
-          gradle --version
-          gradle wrapper --gradle-version 8.2.1
-          chmod +x gradlew
+      - name: Verify Gradle version
+        run: gradle --version
 
-      - name: Build Debug APK
-        run: ./gradlew --no-daemon --stacktrace assembleDebug
+      - name: Build Debug APK (no wrapper)
+        run: gradle --no-daemon --stacktrace assembleDebug
 
       - name: Upload APK (v4)
         uses: actions/upload-artifact@v4
