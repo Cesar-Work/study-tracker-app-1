@@ -69,12 +69,12 @@ dependencies {
   // Coroutines
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-  // Gson (pour persistance SharedPreferences JSON)
+  // Gson (persistance simple JSON)
   implementation("com.google.code.gson:gson:2.10.1")
 
   // Icons Material
   implementation("androidx.compose.material:material-icons-extended")
 
-  // AppCompat (facultatif si nécessaire)
+  // AppCompat (si nécessaire)
   implementation("androidx.appcompat:appcompat:1.6.1")
 }
